@@ -13,6 +13,8 @@ export default class MenuScene extends Phaser.Scene {
 
   create() {
     const bg = this.add.image(this.scale.width / 2, this.scale.height / 2, "bg");
+    
+    // Background scaling logic
     const scaleX = this.scale.width / bg.width;
     const scaleY = this.scale.height / bg.height;
     const scale = Math.max(scaleX, scaleY);
@@ -59,13 +61,12 @@ export default class MenuScene extends Phaser.Scene {
     this.titleText.setFontSize(fontSize);
     this.titleText.setPosition(width / 2, height * 0.25);
 
-    // Play Button Logic - FIX HUGE BUTTON
-    // Button width will be 20% of screen min dimension (width or height)
-    const targetSize = Math.min(width, height) * 0.25; 
-    const currentSize = this.play_btn.sourceWidth || 200; // Default fallback
-    const scale = targetSize / currentSize;
-
-    this.play_btn.setScale(scale);
+    // Play Button Logic - FORCE SIZE
+    // Button will always be 25% of the smaller screen dimension
+    const btnSize = Math.min(width, height) * 0.25;
+    
+    // Force specific pixel size
+    this.play_btn.setDisplaySize(btnSize, btnSize);
     this.play_btn.setPosition(width / 2, height * 0.55);
   }
 }
