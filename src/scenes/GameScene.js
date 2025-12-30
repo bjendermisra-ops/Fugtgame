@@ -1,3 +1,4 @@
+
 import Phaser from "phaser";
 
 export default class GameScene extends Phaser.Scene {
@@ -83,7 +84,7 @@ export default class GameScene extends Phaser.Scene {
     // Create Controls (Desktop pe hidden rahenge)
     this.createMobileControls();
 
-    // Initial resize call to set correct sizes immediately
+    // Initial resize call
     this.resize({ width: this.scale.width, height: this.scale.height });
     this.scale.on("resize", this.resize, this);
   }
@@ -102,11 +103,10 @@ export default class GameScene extends Phaser.Scene {
     this.isShooting = false;
     this.lastFired = 0;
 
-    // Create buttons but we will set their Size and Visibility in the RESIZE function
-    // This prevents them from being huge initially
-    this.upBtn = this.add.image(0, 0, "btn").setInteractive().setDepth(200).setScrollFactor(0).setAlpha(0.6);
-    this.downBtn = this.add.image(0, 0, "btn").setInteractive().setDepth(200).setScrollFactor(0).setAlpha(0.6);
-    this.shootBtn = this.add.image(0, 0, "btn").setInteractive().setDepth(200).setScrollFactor(0).setAlpha(0.6).setTint(0xff4444);
+    // Start with visible false, resize will show them
+    this.upBtn = this.add.image(0, 0, "btn").setInteractive().setDepth(200).setScrollFactor(0).setAlpha(0.6).setVisible(false);
+    this.downBtn = this.add.image(0, 0, "btn").setInteractive().setDepth(200).setScrollFactor(0).setAlpha(0.6).setVisible(false);
+    this.shootBtn = this.add.image(0, 0, "btn").setInteractive().setDepth(200).setScrollFactor(0).setAlpha(0.6).setTint(0xff4444).setVisible(false);
 
     // Rotate arrows
     this.upBtn.setRotation(-1.57); // Up
@@ -139,10 +139,7 @@ export default class GameScene extends Phaser.Scene {
       this.player.setVelocityY(-speed);
     } else if (this.cursors.down.isDown || this.mobileDown) {
       this.player.setVelocityY(speed);
-    } else {
-       // Optional: Set to 0 if you want instant stop, or remove to let gravity work
-       // this.player.setVelocityY(0); 
-    }
+    } 
 
     if (this.cursors.left.isDown) {
         this.player.setVelocityX(-speed);
@@ -235,44 +232,37 @@ export default class GameScene extends Phaser.Scene {
     this.ground.width = width;
     if(this.ground.body) this.ground.body.updateFromGameObject();
 
-    // --- BUTTON RESIZING LOGIC ---
-    
-    // Check if device is Desktop (Laptop/PC)
+    // --- BUTTON RESIZING (FORCE SIZE) ---
     const isDesktop = this.sys.game.device.os.desktop;
 
     if (isDesktop) {
-        // Laptop pe buttons gayab kar do
         if(this.upBtn) this.upBtn.setVisible(false);
         if(this.downBtn) this.downBtn.setVisible(false);
         if(this.shootBtn) this.shootBtn.setVisible(false);
     } else {
-        // Mobile pe buttons dikhao aur size adjust karo
         if(this.upBtn) {
             this.upBtn.setVisible(true);
             this.downBtn.setVisible(true);
             this.shootBtn.setVisible(true);
 
-            // Button width should be 12% of screen width (not too big, not too small)
-            const desiredWidth = width * 0.12; 
-            // Calculate scale: Target / Original
-            const originalWidth = this.upBtn.sourceWidth || 100; // fallback if image not loaded yet
-            const scale = desiredWidth / originalWidth;
+            // FORCE button to be exactly 15% of screen width
+            // This ignores the original image size completely
+            const btnSize = width * 0.15; 
+            
+            this.upBtn.setDisplaySize(btnSize, btnSize);
+            this.downBtn.setDisplaySize(btnSize, btnSize);
+            this.shootBtn.setDisplaySize(btnSize * 1.3, btnSize * 1.3); // Shoot thoda bada
 
-            // Apply scale
-            this.upBtn.setScale(scale);
-            this.downBtn.setScale(scale);
-            this.shootBtn.setScale(scale * 1.2); // Shoot button thoda bada
+            // Positions
+            const paddingX = width * 0.08;
+            const paddingY = height * 0.1;
 
-            // Positions (Padding based on screen size)
-            const paddingX = width * 0.1;
-            const paddingY = height * 0.15;
+            // Left Controls
+            this.downBtn.setPosition(paddingX + btnSize/2, height - paddingY - btnSize/2);
+            this.upBtn.setPosition(paddingX + btnSize/2, height - paddingY - (btnSize * 1.5) - btnSize/2);
 
-            // Left Side (Up/Down)
-            this.upBtn.setPosition(paddingX, height - paddingY - (desiredWidth * 1.2));
-            this.downBtn.setPosition(paddingX, height - paddingY);
-
-            // Right Side (Shoot)
-            this.shootBtn.setPosition(width - paddingX, height - paddingY);
+            // Right Controls
+            this.shootBtn.setPosition(width - paddingX - btnSize/2, height - paddingY - btnSize/2);
         }
     }
   }
